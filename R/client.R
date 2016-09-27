@@ -1,12 +1,12 @@
-#' Class to access Redshift database
+#' Class to access Keboola workspaces
 
 #' @import methods RJDBC rJava
-#' @export RedshiftDriver
+#' @export BackendDriver
 #' @exportClass RedshiftDriver
 #' @field conn Database connection (JDBCConnection)
 #' @field schema Current database schema
-RedshiftDriver <- setRefClass(
-    'RedshiftDriver',
+BackendDriver <- setRefClass(
+    'BackendDriver',
     fields = list(
         conn = 'ANY', # JDBCConnection | NULL
         schema = 'character'
@@ -17,8 +17,16 @@ RedshiftDriver <- setRefClass(
             schema <<- ""
         },
         
-        connect = function(host, db, user, password, schema, port = 5439) {
-            "Connect to Amazon Redshift database.
+        connect = function(host, db, user, password, schema, port = 443, backendType = "snowflake") {
+            if (backendType == "snowflake") {
+                connectSnowflake(host, db, user, password, schema, port)
+            } else {
+                connectRedshift(host, db, user, password, schema, port)
+            }
+        },
+        
+        connectRedshift = function(host, db, user, password, schema, port = 5439) {
+            "Connect to backend database.
             \\subsection{Parameters}{\\itemize{
             \\item{\\code{jdbcUrl} JDBC connection string.}
             \\item{\\code{username} Database user name.}
@@ -27,10 +35,10 @@ RedshiftDriver <- setRefClass(
             \\item{\\code{port} Database server port.}
             }}
             \\subsection{Return Value}{TRUE}"
-            #libPath <- system.file("lib", "RedshiftJDBC41-1.1.10.1010.jar", package = "keboola.redshift.r.client")
+            #libPath <- system.file("lib", "RedshiftJDBC41-1.1.10.1010.jar", package = "keboola.backend.r.client")
             #driver <- JDBC("com.amazon.redshift.jdbc41.Driver", libPath, identifier.quote = '"')
             #jdbcUrl <- paste0("jdbc:redshift://", host, ":", port,  "/", db)
-            libPath <- system.file("lib", "postgresql-9.4.1208.jre7.jar", package = "keboola.redshift.r.client")
+            libPath <- system.file("lib", "postgresql-9.4.1208.jre7.jar", package = "keboola.backend.r.client")
             driver <- JDBC("org.postgresql.Driver", libPath, identifier.quote = '"')
             jdbcUrl <- paste0("jdbc:postgresql://", host, ":", port,  "/", db)
             
@@ -39,6 +47,53 @@ RedshiftDriver <- setRefClass(
             url <- paste0(jdbcUrl, lead, "user=", user, "&password=", password)
             conn <<- dbConnect(driver, url)
             schema <<- schema
+            TRUE
+        },
+        
+        connectSnowflake = function() {
+            # set client metadata info
+            snowflakeClientInfo <- paste0('{',
+                                          '"APPLICATION": "backend.r.client",',
+                                          '"backend.r.client.version": "', packageVersion("backend.r.client"), '",',
+                                          '"R.version": "', R.Version()$version.string,'",',
+                                          '"R.platform": "', R.Version()$platform,'"',
+                                          '}')
+            
+            # initalize the JVM and set the snowflake properties
+            .jinit()
+            .jcall("java/lang/System", "S", "setProperty", "snowflake.client.info", snowflakeClientInfo)
+            
+            if (length(names(opts)) > 0) {
+                opts <- paste0("&",
+                               paste(lapply(names(opts),
+                                            function(x){paste(x,opts[x], sep="=")}),
+                                     collapse="&"))
+            }
+            else {
+                opts <- ""
+            }
+            message("host: ", host)
+            if (is.null(host) || host == "") {
+                host = paste0(account, ".snowflakecomputing.com")
+            }
+            url <- paste0("jdbc:snowflake://", host, ":", as.character(port),
+                          "/?account=", account, opts)
+            message("URL: ", url)
+            libPath <- system.file("lib", "snowflake_jdbc.jar", package = "keboola.backend.r.client")
+            conn <<- dbConnect(RJDBC::JDBC(driverClass = "com.snowflake.client.jdbc.SnowflakeDriver",
+                                         classPath = libPath,
+                                         identifier.quote = '"'),
+                             url,
+                             user,
+                             password, ...)
+            res <- dbGetQuery(con, 'SELECT
+                              CURRENT_USER() AS USER,
+                              CURRENT_DATABASE() AS DBNAME,
+                              CURRENT_VERSION() AS VERSION,
+                              CURRENT_SESSION() AS SESSIONID')
+            info <- list(dbname = res$DBNAME, url = url,
+                         version = res$VERSION, user = res$USER, Id = res$SESSIONID)
+            
             TRUE
         },
         

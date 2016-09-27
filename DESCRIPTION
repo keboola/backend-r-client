@@ -1,0 +1,16 @@
+Package: keboola.backend.r.client
+Type: Package
+Title: Keboola backend database driver
+Version: 1.1
+Date: 2015-04-28
+Author: Ondrej Popelka
+Maintainer: Ondrej Popelka <ondrej.popelka@keboola.com>
+Depends:
+    RJDBC,
+    rJava,
+    methods
+Suggests:
+    testthat
+Description: A set of methods for working with Keboola backend databases.
+License: MIT + file LICENSE
+RoxygenNote: 5.0.1

@@ -42,7 +42,7 @@ test_that("update", {
         driver$update("CREATE TABLE foo (bar INTEGER);"), 
         throws_error()
     )
-    driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
+    driver$connectRedshift(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS foo CASCADE;")
     
     expect_equal(
@@ -61,7 +61,7 @@ test_that("update", {
         driver$update("CREATE TABLE foo (bar INTEGER);"), 
         throws_error()
     )
-    driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
+    driver$connectRedshift(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS foo CASCADE;")
     
     expect_equal(
@@ -76,7 +76,7 @@ test_that("update", {
 
 test_that("tableExists", {
     driver <- BackendDriver$new()     
-    driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
+    driver$connectRedshift(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS foo CASCADE;")
     driver$update("CREATE TABLE foo (bar INTEGER);")
     
@@ -92,7 +92,7 @@ test_that("tableExists", {
 
 test_that("columnTypes", {
     driver <- BackendDriver$new()     
-    driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
+    driver$connectRedshift(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update(paste0("DROP TABLE IF EXISTS ", driver$schema, ".foo CASCADE;"))
     driver$update(paste0("CREATE TABLE ", driver$schema, ".foo (bar INTEGER, baz CHARACTER VARYING (200));"))
     colTypes <- vector()
@@ -111,7 +111,7 @@ test_that("columnTypes", {
 
 test_that("saveDataFrame1", {
     driver <- BackendDriver$new()     
-    driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
+    driver$connectRedshift(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- data.frame("foo" = c(1,3,5), "bar" = c("one", "three", "five"))
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE)
@@ -151,7 +151,7 @@ test_that("saveDataFrame1", {
     
 test_that("saveDataFrame2", {
     driver <- BackendDriver$new()     
-    driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)    
+    driver$connectRedshift(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)    
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     driver$update(paste0("CREATE TABLE ", RS_SCHEMA, ".fooBar (bar INTEGER);"))
     driver$update(paste0("CREATE VIEW ", RS_SCHEMA, ".basBar AS (SELECT * FROM ", RS_SCHEMA, ".fooBar);"))
@@ -188,7 +188,7 @@ test_that("saveDataFrame2", {
 
 test_that("saveSingleRow", {
     driver <- BackendDriver$new()     
-    driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
+    driver$connectRedshift(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- data.frame("foo" = c(1), "bar" = c("one"))
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE)
@@ -203,7 +203,7 @@ test_that("saveSingleRow", {
 
 test_that("saveDataFrameFile", {
     driver <- BackendDriver$new()     
-    driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
+    driver$connectRedshift(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- read.csv(file.path(DATA_DIR, 'data1.csv'))
     df$timestamp <- as.POSIXlt(df$timestamp, tz = 'UTC')
@@ -215,7 +215,7 @@ test_that("saveDataFrameFile", {
 
 test_that("saveDataFrameScientificNA", {
     driver <- BackendDriver$new()
-    driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
+    driver$connectRedshift(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- data.frame(
         id = c(1, 2, 6e+05),
@@ -231,7 +231,7 @@ test_that("saveDataFrameScientificNA", {
     expect_equal(nrow(df), nrow(dfResult))
     
     driver <- BackendDriver$new()
-    driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
+    driver$connectRedshift(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- data.frame(
         id = c(1, 2, 6e+05, NA),
@@ -245,7 +245,7 @@ test_that("saveDataFrameScientificNA", {
 
 test_that("saveDataFrameLarge", {
     driver <- BackendDriver$new()     
-    driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
+    driver$connectRedshift(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- data.frame(a = rep('a', 10000), b = seq(1, 10000))
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE, displayProgress = FALSE)
@@ -257,7 +257,7 @@ test_that("saveDataFrameLarge", {
 
 test_that("saveDataFrameEscape", {
     driver <- BackendDriver$new()
-    driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
+    driver$connectRedshift(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- data.frame(a = c('a', 'b'), b = c('foo \' bar', 'foo ; bar'))
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE, displayProgress = TRUE)
@@ -268,7 +268,7 @@ test_that("saveDataFrameEscape", {
 
 test_that("saveDataFrameNonScalar1", {
     driver <- BackendDriver$new()
-    driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
+    driver$connectRedshift(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- data.frame(a = c('a', 'b'), stringsAsFactors = FALSE)
     df$b <- list('e', 'f')
@@ -280,7 +280,7 @@ test_that("saveDataFrameNonScalar1", {
 
 test_that("saveDataFrameNonScalar2", {
     driver <- BackendDriver$new()
-    driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
+    driver$connectRedshift(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- data.frame(a = c('a', 'b'), stringsAsFactors = FALSE)
     df$b <- list(c('a1', 'a2', 'a3'), c('b1', 'b2'))

@@ -1,19 +1,19 @@
-library('keboola.redshift.r.client')
+library('keboola.backend.r.client')
 
-test_that("connect", {
-    driver <- RedshiftDriver$new()     
+test_that("connectRedshift", {
+    driver <- BackendDriver$new()     
     expect_equal(
-        driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA), 
+        driver$connectRedshift(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA), 
         TRUE
     )
     expect_that(
-        driver$connect("invalid", RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA),
+        driver$connectRedshift("invalid", RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA),
         throws_error()
     )
 })
 
 test_that("prepare", {
-    driver <- RedshiftDriver$new()     
+    driver <- BackendDriver$new()     
     expect_equal(
         driver$prepareStatement("SELECT * FROM foo WHERE bar = ?", "baz"), 
         "SELECT * FROM foo WHERE bar = 'baz'"
@@ -37,7 +37,7 @@ test_that("prepare", {
 })
 
 test_that("update", {
-    driver <- RedshiftDriver$new()     
+    driver <- BackendDriver$new()     
     expect_that(
         driver$update("CREATE TABLE foo (bar INTEGER);"), 
         throws_error()
@@ -56,7 +56,7 @@ test_that("update", {
 })
 
 test_that("update", {
-    driver <- RedshiftDriver$new()     
+    driver <- BackendDriver$new()     
     expect_that(
         driver$update("CREATE TABLE foo (bar INTEGER);"), 
         throws_error()
@@ -75,7 +75,7 @@ test_that("update", {
 })
 
 test_that("tableExists", {
-    driver <- RedshiftDriver$new()     
+    driver <- BackendDriver$new()     
     driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS foo CASCADE;")
     driver$update("CREATE TABLE foo (bar INTEGER);")
@@ -91,7 +91,7 @@ test_that("tableExists", {
 })
 
 test_that("columnTypes", {
-    driver <- RedshiftDriver$new()     
+    driver <- BackendDriver$new()     
     driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update(paste0("DROP TABLE IF EXISTS ", driver$schema, ".foo CASCADE;"))
     driver$update(paste0("CREATE TABLE ", driver$schema, ".foo (bar INTEGER, baz CHARACTER VARYING (200));"))
@@ -110,7 +110,7 @@ test_that("columnTypes", {
 })
 
 test_that("saveDataFrame1", {
-    driver <- RedshiftDriver$new()     
+    driver <- BackendDriver$new()     
     driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- data.frame("foo" = c(1,3,5), "bar" = c("one", "three", "five"))
@@ -150,7 +150,7 @@ test_that("saveDataFrame1", {
 })
     
 test_that("saveDataFrame2", {
-    driver <- RedshiftDriver$new()     
+    driver <- BackendDriver$new()     
     driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)    
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     driver$update(paste0("CREATE TABLE ", RS_SCHEMA, ".fooBar (bar INTEGER);"))
@@ -187,7 +187,7 @@ test_that("saveDataFrame2", {
 })
 
 test_that("saveSingleRow", {
-    driver <- RedshiftDriver$new()     
+    driver <- BackendDriver$new()     
     driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- data.frame("foo" = c(1), "bar" = c("one"))
@@ -202,7 +202,7 @@ test_that("saveSingleRow", {
 })
 
 test_that("saveDataFrameFile", {
-    driver <- RedshiftDriver$new()     
+    driver <- BackendDriver$new()     
     driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- read.csv(file.path(DATA_DIR, 'data1.csv'))
@@ -214,7 +214,7 @@ test_that("saveDataFrameFile", {
 })
 
 test_that("saveDataFrameScientificNA", {
-    driver <- RedshiftDriver$new()
+    driver <- BackendDriver$new()
     driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- data.frame(
@@ -230,7 +230,7 @@ test_that("saveDataFrameScientificNA", {
     dfResult <- driver$select("SELECT id, text FROM fooBar;")
     expect_equal(nrow(df), nrow(dfResult))
     
-    driver <- RedshiftDriver$new()
+    driver <- BackendDriver$new()
     driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- data.frame(
@@ -244,7 +244,7 @@ test_that("saveDataFrameScientificNA", {
 })
 
 test_that("saveDataFrameLarge", {
-    driver <- RedshiftDriver$new()     
+    driver <- BackendDriver$new()     
     driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- data.frame(a = rep('a', 10000), b = seq(1, 10000))
@@ -256,7 +256,7 @@ test_that("saveDataFrameLarge", {
 
 
 test_that("saveDataFrameEscape", {
-    driver <- RedshiftDriver$new()
+    driver <- BackendDriver$new()
     driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- data.frame(a = c('a', 'b'), b = c('foo \' bar', 'foo ; bar'))
@@ -267,7 +267,7 @@ test_that("saveDataFrameEscape", {
 })
 
 test_that("saveDataFrameNonScalar1", {
-    driver <- RedshiftDriver$new()
+    driver <- BackendDriver$new()
     driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- data.frame(a = c('a', 'b'), stringsAsFactors = FALSE)
@@ -279,7 +279,7 @@ test_that("saveDataFrameNonScalar1", {
 })
 
 test_that("saveDataFrameNonScalar2", {
-    driver <- RedshiftDriver$new()
+    driver <- BackendDriver$new()
     driver$connect(RS_HOST, RS_DB, RS_USER, RS_PASSWORD, RS_SCHEMA)
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- data.frame(a = c('a', 'b'), stringsAsFactors = FALSE)

@@ -1,16 +1,30 @@
 library(testthat)
 
-# default values
+# default redshift values
 RS_HOST <- "fooBar.example.com"
 RS_DB <- "fooBar"
 RS_SCHEMA <- "fooBar"
 RS_USER <- "fooBar"
 RS_PASSWORD <- "fooBar"
+
+# default snowflake values
+SNFLK_HOST <- "foobar.example.com"
+SNFLK_DB <- "foobar"
+SNFLK_SCHEMA <- "foobar"
+SNFLK_USER <- "foobar"
+SNFLK_PASSWORD <- "foobar"
+
 DATA_DIR <- "../tests/data"
 
 # override with config if any
 if (file.exists("config.R")) {
     source("config.R")
+}
+if (file.exists("config.redshift.R")) {
+    source("config.redshift.R")
+}
+if (file.exists("config.snowflake.R")) {
+    source("config.snowflake.R")
 }
 
 # override with environment if any
@@ -29,9 +43,25 @@ if (nchar(Sys.getenv("RS_USER")) > 0) {
 if (nchar(Sys.getenv("RS_PASSWORD")) > 0) {
     RS_PASSWORD <- Sys.getenv("RS_PASSWORD")  
 }
+if (nchar(Sys.getenv("SNFLK_HOST")) > 0) {
+    SNFLK_HOST <- Sys.getenv("SNFLK_HOST")  
+}
+if (nchar(Sys.getenv("SNFLK_DB")) > 0) {
+    SNFLK_DB <- Sys.getenv("SNFLK_DB")  
+}
+if (nchar(Sys.getenv("SNFLK_SCHEMA")) > 0) {
+    SNFLK_SCHEMA <- Sys.getenv("SNFLK_SCHEMA")  
+}
+if (nchar(Sys.getenv("SNFLK_USER")) > 0) {
+    SNFLK_USER <- Sys.getenv("SNFLK_USER")  
+}
+if (nchar(Sys.getenv("SNFLK_PASSWORD")) > 0) {
+    SNFLK_PASSWORD <- Sys.getenv("SNFLK_PASSWORD")  
+}
 if (nchar(Sys.getenv("DATA_DIR")) > 0) {
     DATA_DIR <- Sys.getenv("DATA_DIR")  
 }
 
+print("GOT PAST THE BS")
 
-test_check("keboola.redshift.r.client")
+test_check("keboola.backend.r.client")

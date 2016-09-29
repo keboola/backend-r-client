@@ -2,7 +2,7 @@
 
 #' @import methods RJDBC rJava
 #' @export BackendDriver
-#' @exportClass RedshiftDriver
+#' @exportClass BackendDriver
 #' @field conn Database connection (JDBCConnection)
 #' @field schema Current database schema
 BackendDriver <- setRefClass(

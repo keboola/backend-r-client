@@ -50,11 +50,11 @@ BackendDriver <- setRefClass(
             TRUE
         },
         
-        connectSnowflake = function() {
+        connectSnowflake = function(host, db, user, password, schema, account = "keboola", port = 443, opts = list(), ...) {
             # set client metadata info
             snowflakeClientInfo <- paste0('{',
-                                          '"APPLICATION": "backend.r.client",',
-                                          '"backend.r.client.version": "', packageVersion("backend.r.client"), '",',
+                                          '"APPLICATION": "keboola.backend.r.client",',
+                                          '"backend.r.client.version": "', packageVersion("keboola.backend.r.client"), '",',
                                           '"R.version": "', R.Version()$version.string,'",',
                                           '"R.platform": "', R.Version()$platform,'"',
                                           '}')
@@ -80,9 +80,9 @@ BackendDriver <- setRefClass(
                           "/?account=", account, opts)
             message("URL: ", url)
             libPath <- system.file("lib", "snowflake_jdbc.jar", package = "keboola.backend.r.client")
-            conn <<- dbConnect(RJDBC::JDBC(driverClass = "com.snowflake.client.jdbc.SnowflakeDriver",
-                                         classPath = libPath,
-                                         identifier.quote = '"'),
+            print(libPath)
+            driver <- JDBC("com.snowflake.client.jdbc.SnowflakeDriver", libPath, identifier.quote = '"')
+            conn <<- dbConnect(driver,
                              url,
                              user,
                              password, ...)

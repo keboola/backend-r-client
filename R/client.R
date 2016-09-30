@@ -17,9 +17,9 @@ BackendDriver <- setRefClass(
             schema <<- ""
         },
         
-        connect = function(host, db, user, password, schema, port = 443, backendType = "snowflake") {
+        connect = function(host, db, user, password, schema, backendType = "snowflake") {
             if (backendType == "snowflake") {
-                connectSnowflake(host, db, user, password, schema, port)
+                connectSnowflake(host, db, user, password, schema)
             } else {
                 connectRedshift(host, db, user, password, schema)
             }

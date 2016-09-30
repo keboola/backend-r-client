@@ -86,7 +86,7 @@ BackendDriver <- setRefClass(
                              url,
                              user,
                              password, ...)
-            res <- dbGetQuery(con, 'SELECT
+            res <- dbGetQuery(conn, 'SELECT
                               CURRENT_USER() AS USER,
                               CURRENT_DATABASE() AS DBNAME,
                               CURRENT_VERSION() AS VERSION,

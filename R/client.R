@@ -61,7 +61,7 @@ BackendDriver <- setRefClass(
         connectSnowflake = function(host, db, user, password, schema, account = "keboola", port = 443, opts = list(), ...) {
             
             if (nchar(.self$backendType) == 0) {
-                backendType <<- "redshift-workspace"
+                backendType <<- "snowflake"
             }
             
             # set client metadata info

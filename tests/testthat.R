@@ -1,19 +1,5 @@
 library(testthat)
 
-# default redshift values
-RS_HOST <- "fooBar.example.com"
-RS_DB <- "fooBar"
-RS_SCHEMA <- "fooBar"
-RS_USER <- "fooBar"
-RS_PASSWORD <- "fooBar"
-
-# default snowflake values
-SNFLK_HOST <- "foobar.example.com"
-SNFLK_DB <- "foobar"
-SNFLK_SCHEMA <- "foobar"
-SNFLK_USER <- "foobar"
-SNFLK_PASSWORD <- "foobar"
-
 DATA_DIR <- "../tests/data"
 
 # override with config if any
@@ -61,7 +47,5 @@ if (nchar(Sys.getenv("SNFLK_PASSWORD")) > 0) {
 if (nchar(Sys.getenv("DATA_DIR")) > 0) {
     DATA_DIR <- Sys.getenv("DATA_DIR")  
 }
-
-print("GOT PAST THE BS")
 
 test_check("keboola.backend.r.client")

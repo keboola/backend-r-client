@@ -9,15 +9,19 @@ BackendDriver <- setRefClass(
     'BackendDriver',
     fields = list(
         conn = 'ANY', # JDBCConnection | NULL
-        schema = 'character'
+        schema = 'character',
+        backendType = 'character'
     ),
     methods = list(
         initialize = function() {
             conn <<- NULL
             schema <<- ""
+            backendType <<- ""
         },
         
         connect = function(host, db, user, password, schema, backendType = "snowflake") {
+            backendType <<- backendType
+            schema <<- schema
             if (backendType == "snowflake") {
                 connectSnowflake(host, db, user, password, schema)
             } else {
@@ -35,6 +39,10 @@ BackendDriver <- setRefClass(
             \\item{\\code{port} Database server port.}
             }}
             \\subsection{Return Value}{TRUE}"
+            
+            if (nchar(.self$backendType) == 0) {
+                backendType <<- "redshift-workspace"
+            }
             #libPath <- system.file("lib", "RedshiftJDBC41-1.1.10.1010.jar", package = "keboola.backend.r.client")
             #driver <- JDBC("com.amazon.redshift.jdbc41.Driver", libPath, identifier.quote = '"')
             #jdbcUrl <- paste0("jdbc:redshift://", host, ":", port,  "/", db)
@@ -51,6 +59,11 @@ BackendDriver <- setRefClass(
         },
         
         connectSnowflake = function(host, db, user, password, schema, account = "keboola", port = 443, opts = list(), ...) {
+            
+            if (nchar(.self$backendType) == 0) {
+                backendType <<- "redshift-workspace"
+            }
+            
             # set client metadata info
             snowflakeClientInfo <- paste0('{',
                                           '"APPLICATION": "keboola.backend.r.client",',
@@ -86,6 +99,7 @@ BackendDriver <- setRefClass(
                              url,
                              user,
                              password, ...)
+            schema <<- schema
             res <- dbGetQuery(conn, 'SELECT
                               CURRENT_USER() AS USER,
                               CURRENT_DATABASE() AS DBNAME,
@@ -345,8 +359,14 @@ BackendDriver <- setRefClass(
             \\item{\\code{tableName} Name of the table (without schema).}
             }}
             \\subsection{Return Value}{TRUE if the table exists, FALSE otherwise.}"
-            res <- select("SELECT COUNT(*) AS count FROM information_schema.tables WHERE table_schema ILIKE ? AND table_name ILIKE ?;", schema, tableName);
-            ret <- res[1, 'count'] > 0
+            if (.self$backendType == "snowflake") {
+                res <- select("SHOW TABLES LIKE ? IN SCHEMA ?",tableName, .self$schema)
+                ret <- nrow(res[which(res$name == tableName),]) > 0 
+            } else {
+                #redshift
+                res <- select("SELECT COUNT(*) AS count FROM information_schema.tables WHERE table_schema ILIKE ? AND table_name ILIKE ?;", schema, tableName);
+                ret <- res[1, 'count'] > 0
+            }
             ret
         },
         
@@ -356,10 +376,18 @@ BackendDriver <- setRefClass(
             \\item{\\code{tableName} Name of the table (without schema).}
             }}
             \\subsection{Return Value}{Named vector, name is column name, value is datatype.}"
-            ret <- select("SELECT column_name, data_type FROM information_schema.columns WHERE (table_schema ILIKE ?) AND (table_name ILIKE ?);", schema, tableName);
-            colnames(ret) <- c('column', 'dataType')    
-            retVector <- as.vector(ret[,'dataType'])
-            names(retVector) <- ret[,'column']
+            if (.self$backendType == "snowflake") {
+                # TODO: fix parameter quoting for SHOW ... IN type queries also applies here
+                res <- select(paste("DESC TABLE", tableName))
+                cols <- res[which(res$kind == "COLUMN"),]
+                retVector <- as.vector(cols[,"type"])
+                names(retVector) <- cols[, "name"]
+            } else {
+                ret <- select("SELECT column_name, data_type FROM information_schema.columns WHERE (table_schema ILIKE ?) AND (table_name ILIKE ?);", schema, tableName);
+                colnames(ret) <- c('column', 'dataType')    
+                retVector <- as.vector(ret[,'dataType'])
+                names(retVector) <- ret[,'column']    
+            }
             retVector
         }        
     )

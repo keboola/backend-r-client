@@ -1,2 +1,4 @@
 tests/config.*
 .Rproj.user
+.RData
+.Rhistory

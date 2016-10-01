@@ -360,7 +360,7 @@ BackendDriver <- setRefClass(
             }}
             \\subsection{Return Value}{TRUE if the table exists, FALSE otherwise.}"
             if (.self$backendType == "snowflake") {
-                res <- select("SHOW TABLES LIKE ? IN SCHEMA ?",tableName, .self$schema)
+                res <- select("SHOW TABLES LIKE ?",tableName)
                 ret <- nrow(res[which(res$name == tableName),]) > 0 
             } else {
                 #redshift

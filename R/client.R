@@ -212,7 +212,6 @@ BackendDriver <- setRefClass(
             }}
             \\subsection{Return Value}{TRUE}"
             # drop the table if already exists and loading is not incremental
-            tableFull <- paste0(schema, '.', table)
             if (!incremental) {
                 # check for non-scalar columns
                 classes <- lapply(dfRaw, class)
@@ -272,10 +271,10 @@ BackendDriver <- setRefClass(
                 }
                 # drop the table if necessary
                 if (tableExists(table)) {
-                    update(paste0("DROP TABLE ", tableFull, " CASCADE;"))
+                    update(paste0("DROP TABLE ", table, " CASCADE;"))
                 }
                 # create the table
-                sql <- paste0("CREATE TABLE ", tableFull, " (", paste(columns, collapse = ", "), ");")
+                sql <- paste0("CREATE TABLE ", table, " (", paste(columns, collapse = ", "), ");")
                 update(sql)
             } else {
                 df <- dfRaw
@@ -291,9 +290,9 @@ BackendDriver <- setRefClass(
                 }
             )
             if (rowNumbers) {
-                sqlHeader <- paste0("INSERT INTO ", tableFull, " (row_num, ", paste(colNames, collapse = ", "), ") VALUES ")
+                sqlHeader <- paste0("INSERT INTO ", table, " (row_num, ", paste(colNames, collapse = ", "), ") VALUES ")
             } else {
-                sqlHeader <- paste0("INSERT INTO ", tableFull, " (", paste(colNames, collapse = ", "), ") VALUES ")			
+                sqlHeader <- paste0("INSERT INTO ", table, " (", paste(colNames, collapse = ", "), ") VALUES ")			
             }
             
             if (nrow(df) > 0) {

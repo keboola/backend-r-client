@@ -1,5 +1,11 @@
 library(testthat)
 
+if (!("keboola.sapi.r.client" %in% installed.packages())) {
+    library(devtools)
+    devtools::install_github("keboola/sapi-r-client")
+}
+library(keboola.sapi.r.client)
+
 DATA_DIR <- "../tests/data"
 
 # override with config if any
@@ -14,38 +20,30 @@ if (file.exists("config.snowflake.R")) {
 }
 
 # override with environment if any
-if (nchar(Sys.getenv("RS_HOST")) > 0) {
-    RS_HOST <- Sys.getenv("RS_HOST")  
-}
-if (nchar(Sys.getenv("RS_DB")) > 0) {
-    RS_DB <- Sys.getenv("RS_DB")  
-}
-if (nchar(Sys.getenv("RS_SCHEMA")) > 0) {
-    RS_SCHEMA <- Sys.getenv("RS_SCHEMA")  
-}
-if (nchar(Sys.getenv("RS_USER")) > 0) {
-    RS_USER <- Sys.getenv("RS_USER")  
-}
-if (nchar(Sys.getenv("RS_PASSWORD")) > 0) {
-    RS_PASSWORD <- Sys.getenv("RS_PASSWORD")  
-}
-if (nchar(Sys.getenv("SNFLK_HOST")) > 0) {
-    SNFLK_HOST <- Sys.getenv("SNFLK_HOST")  
-}
-if (nchar(Sys.getenv("SNFLK_DB")) > 0) {
-    SNFLK_DB <- Sys.getenv("SNFLK_DB")  
-}
-if (nchar(Sys.getenv("SNFLK_SCHEMA")) > 0) {
-    SNFLK_SCHEMA <- Sys.getenv("SNFLK_SCHEMA")  
-}
-if (nchar(Sys.getenv("SNFLK_USER")) > 0) {
-    SNFLK_USER <- Sys.getenv("SNFLK_USER")  
-}
-if (nchar(Sys.getenv("SNFLK_PASSWORD")) > 0) {
-    SNFLK_PASSWORD <- Sys.getenv("SNFLK_PASSWORD")  
+if (nchar(Sys.getenv("KBC_TOKEN")) > 0) {
+    KBC_TOKEN <- Sys.getenv("KBC_TOKEN")
 }
 if (nchar(Sys.getenv("DATA_DIR")) > 0) {
     DATA_DIR <- Sys.getenv("DATA_DIR")  
 }
 
-test_check("keboola.backend.r.client")
+cl <- SapiClient$new(KBC_TOKEN)
+tryCatch({
+    snowflakeWorkspace <- cl$createWorkspace(backend="snowflake")
+    SNFLK_HOST <- snowflakeWorkspace$connection$host
+    SNFLK_DB <- snowflakeWorkspace$connection$database
+    SNFLK_USER <- snowflakeWorkspace$connection$user
+    SNFLK_PASSWORD <- snowflakeWorkspace$connection$password
+    SNFLK_SCHEMA <- snowflakeWorkspace$connection$schema
+    redshiftWorkspace <- cl$createWorkspace(backend="redshift")
+    RS_HOST <- redshiftWorkspace$connection$host
+    RS_DB <- redshiftWorkspace$connection$database
+    RS_SCHEMA <- redshiftWorkspace$connection$schema
+    RS_USER <- redshiftWorkspace$connection$user
+    RS_PASSWORD <- redshiftWorkspace$connection$password
+    test_check("keboola.backend.r.client")
+}, finally = {
+    cl$dropWorkspace(snowflakeWorkspace$id)
+    cl$dropWorkspace(redshiftWorkspace$id)
+})
+

@@ -11,6 +11,9 @@ Depends:
     methods
 Suggests:
     testthat
+    keboola.sapi.r.client
 Description: A set of methods for working with Keboola backend databases.
 License: MIT + file LICENSE
 RoxygenNote: 5.0.1
+Remotes:
+    keboola/sapi-r-client

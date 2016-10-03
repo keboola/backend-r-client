@@ -1,0 +1,11 @@
+sudo: required
+language: bash
+services:
+  - docker
+before_script:
+  - docker-compose build tests
+script: docker-compose run --rm tests
+after_success:
+  - docker images
+notifications:
+  slack: keboola:OjBMd7YFo7kui4ZrgkzEHxvR

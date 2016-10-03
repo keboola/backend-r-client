@@ -1,0 +1,16 @@
+version: '2'
+services:
+  tests:
+    build: .
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./:/code
+    working_dir: /code
+    command: >
+       sh -c '
+       R CMD check ./
+       '
+    environment:
+      - KBC_TOKEN
+        

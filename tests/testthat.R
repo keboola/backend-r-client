@@ -6,8 +6,6 @@ if (!("keboola.sapi.r.client" %in% installed.packages())) {
 }
 library(keboola.sapi.r.client)
 
-DATA_DIR <- "../tests/data"
-
 # override with config if any
 if (file.exists("config.R")) {
     source("config.R")

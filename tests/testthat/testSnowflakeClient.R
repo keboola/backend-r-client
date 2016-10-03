@@ -95,19 +95,19 @@ test_that("tableExists", {
 test_that("columnTypes", {
     driver <- BackendDriver$new()     
     driver$connectSnowflake(SNFLK_HOST, SNFLK_DB, SNFLK_USER, SNFLK_PASSWORD, SNFLK_SCHEMA)
-    driver$update(paste0("DROP TABLE IF EXISTS ", driver$schema, ".foo CASCADE;"))
-    driver$update(paste0("CREATE TABLE ", driver$schema, ".foo (bar INTEGER, baz CHARACTER VARYING (200));"))
+    driver$update(paste0("DROP TABLE IF EXISTS foo CASCADE;"))
+    driver$update(paste0("CREATE TABLE foo (bar INTEGER, baz VARCHAR (200));"))
     colTypes <- vector()
-    colTypes[["bar"]] <- "integer"
-    colTypes[["baz"]] <- "character varying"
+    colTypes[["BAR"]] <- "NUMBER(38,0)"
+    colTypes[["BAZ"]] <- "VARCHAR(200)"
     
     expect_equal(
         sort(driver$columnTypes('foo')),
         sort(colTypes)
     )
-    expect_equal(
-        length(driver$columnTypes("non-existent-table")), 
-        0
+    expect_that(
+        driver$columnTypes("non-existent-table"), 
+        throws_error()
     )
 })
 
@@ -117,7 +117,7 @@ test_that("saveDataFrame1", {
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- data.frame("foo" = c(1,3,5), "bar" = c("one", "three", "five"))
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE)
-    dfResult <- driver$select("SELECT foo, bar FROM fooBar ORDER BY foo")
+    dfResult <- driver$select("SELECT \"foo\", \"bar\" FROM fooBar ORDER BY \"foo\"")
     df[, "bar"] <- as.character(df[, "bar"])
     
     expect_equal(
@@ -128,9 +128,9 @@ test_that("saveDataFrame1", {
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- data.frame("foo" = c(1,3,5), "bar" = c("one", "three", "five"))
     driver$saveDataFrame(df, "fooBar", rowNumbers = TRUE, incremental = FALSE)
-    dfResult <- driver$select("SELECT foo, bar, row_num FROM fooBar ORDER BY foo")
+    dfResult <- driver$select("SELECT \"foo\", \"bar\", \"ROW_NUM\" FROM fooBar ORDER BY \"foo\"")
     df[, "bar"] <- as.character(df[, "bar"])
-    df[['row_num']] <- c(1, 2, 3)
+    df[['ROW_NUM']] <- c(1, 2, 3)
 
     expect_equal(
         dfResult,
@@ -138,11 +138,11 @@ test_that("saveDataFrame1", {
     )
     
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
-    driver$update(paste0("CREATE TABLE ", SNFLK_SCHEMA, ".fooBar (bar INTEGER);"))
+    driver$update(paste0("CREATE TABLE fooBar (bar INTEGER);"))
     # verify that the old table will get deleted
     df <- data.frame("foo" = c(1,3,5), "bar" = c("one", "three", "five"))
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE)
-    dfResult <- driver$select("SELECT foo, bar FROM fooBar ORDER BY foo")
+    dfResult <- driver$select("SELECT \"foo\", \"bar\" FROM fooBar ORDER BY \"foo\"")
     df[, "bar"] <- as.character(df[, "bar"])
     
     expect_equal(
@@ -155,12 +155,12 @@ test_that("saveDataFrame2", {
     driver <- BackendDriver$new()     
     driver$connectSnowflake(SNFLK_HOST, SNFLK_DB, SNFLK_USER, SNFLK_PASSWORD, SNFLK_SCHEMA)    
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
-    driver$update(paste0("CREATE TABLE ", SNFLK_SCHEMA, ".fooBar (bar INTEGER);"))
-    driver$update(paste0("CREATE VIEW ", SNFLK_SCHEMA, ".basBar AS (SELECT * FROM ", SNFLK_SCHEMA, ".fooBar);"))
+    driver$update(paste0("CREATE TABLE fooBar (bar INTEGER);"))
+    driver$update(paste0("CREATE VIEW basBar AS (SELECT * FROM fooBar);"))
     # verify that the old table will get deleted even whant it has dependencies
     df <- data.frame("foo" = c(1,3,5), "bar" = c("one", "three", "five"))
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE)
-    dfResult <- driver$select("SELECT foo, bar FROM fooBar ORDER BY foo")
+    dfResult <- driver$select("SELECT \"foo\", \"bar\" FROM fooBar ORDER BY \"foo\"")
     df[, "bar"] <- as.character(df[, "bar"])
     
     expect_equal(
@@ -169,7 +169,7 @@ test_that("saveDataFrame2", {
     )
     
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
-    driver$update(paste0("CREATE TABLE ", SNFLK_SCHEMA, ".fooBar (bar INTEGER);"))
+    driver$update(paste0("CREATE TABLE fooBar (bar INTEGER);"))
     # verify that the old table will not get deleted
     expect_that(
         driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = TRUE),
@@ -178,7 +178,7 @@ test_that("saveDataFrame2", {
     
     df <- data.frame(name = c('first', 'second'))
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
-    driver$update(paste0("CREATE TABLE ", SNFLK_SCHEMA, ".fooBar (name VARCHAR(200));"))        
+    driver$update(paste0("CREATE TABLE fooBar (name VARCHAR(200));"))        
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = TRUE)
     dfResult <- driver$select("SELECT name FROM fooBar ORDER BY name;")
     dfResult[['name']] <- as.factor(dfResult[['name']])

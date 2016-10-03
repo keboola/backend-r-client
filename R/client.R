@@ -93,7 +93,6 @@ BackendDriver <- setRefClass(
                           "/?account=", account, opts)
             message("URL: ", url)
             libPath <- system.file("lib", "snowflake_jdbc.jar", package = "keboola.backend.r.client")
-            print(libPath)
             driver <- JDBC("com.snowflake.client.jdbc.SnowflakeDriver", libPath, identifier.quote = '"')
             conn <<- dbConnect(driver,
                              url,
@@ -359,7 +358,7 @@ BackendDriver <- setRefClass(
             }}
             \\subsection{Return Value}{TRUE if the table exists, FALSE otherwise.}"
             if (.self$backendType == "snowflake") {
-                res <- select("SHOW TABLES LIKE ?",tableName)
+                res <- select("SHOW TABLES LIKE ?",toupper(tableName))
                 ret <- nrow(res[which(res$name == tableName),]) > 0 
             } else {
                 #redshift

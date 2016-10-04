@@ -4,7 +4,6 @@ services:
   - docker
 before_script:
   - docker-compose build tests
-  - export DATA_DIR=$TRAVIS_BUILD_DIR/tests/data/
 script: docker-compose run --rm tests
 after_success:
   - docker images

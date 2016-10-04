@@ -208,7 +208,31 @@ test_that("saveDataFrameFile", {
     driver <- BackendDriver$new()     
     driver$connectSnowflake(SNFLK_HOST, SNFLK_DB, SNFLK_USER, SNFLK_PASSWORD, SNFLK_SCHEMA)
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
-    df <- read.csv(file.path(DATA_DIR, 'data1.csv'))
+    df <- read.table(header=TRUE,sep=",", text = '"","timestamp","anoms","expected_value"
+                     "1","2011-02-25",9010345,9010345
+                     "2","2013-08-25",747819,606634
+                     "3","2013-09-20",779278,670728
+                     "4","2013-10-04",827332,550889
+                     "5","2013-10-06",788162,396039
+                     "6","2013-10-11",1047828,198530
+                     "7","2013-10-14",790715,1060
+                     "8","2010-12-14",9002068,9002068
+                     "9","2013-10-09",841979,442362
+                     "10","2010-12-09",9003269,9003269
+                     "11","2013-09-18",815260,728237
+                     "12","2013-09-21",820278,743671
+                     "13","2013-09-28",745668,772964
+                     "14","2013-10-02",803688,803687
+                     "15","2013-10-05",805601,669754
+                     "16","2013-10-10",904069,535841
+                     "17","2013-10-13",954868,408952
+                     "18","2013-10-15",899812,282103
+                     "19","2011-02-22",9011012,4857
+                     "20","2013-05-31",952177,472330
+                     "21","2013-09-15",751595,746646
+                     "22","2013-09-19",743568,746286
+                     "23","2013-10-03",802333,739189
+                     "24","2013-10-12",1044813,733749')
     df$timestamp <- as.POSIXlt(df$timestamp, tz = 'UTC')
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE)
     dfResult <- driver$select("SELECT \"timestamp\", \"anoms\", \"expected_value\" FROM fooBar ORDER BY \"timestamp\";")

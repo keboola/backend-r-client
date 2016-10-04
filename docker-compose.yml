@@ -13,4 +13,5 @@ services:
        '
     environment:
       - KBC_TOKEN
+      - DATA_DIR
         

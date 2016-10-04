@@ -156,7 +156,8 @@ test_that("saveDataFrame2", {
     driver$connectSnowflake(SNFLK_HOST, SNFLK_DB, SNFLK_USER, SNFLK_PASSWORD, SNFLK_SCHEMA)    
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     driver$update(paste0("CREATE TABLE fooBar (bar INTEGER);"))
-    driver$update(paste0("CREATE VIEW basBar AS (SELECT * FROM fooBar);"))
+    driver$update("DROP VIEW IF EXISTS basBar CASCADE;")
+    driver$update("CREATE VIEW basBar AS (SELECT * FROM fooBar);")
     # verify that the old table will get deleted even whant it has dependencies
     df <- data.frame("foo" = c(1,3,5), "bar" = c("one", "three", "five"))
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE)
@@ -178,9 +179,9 @@ test_that("saveDataFrame2", {
     
     df <- data.frame(name = c('first', 'second'))
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
-    driver$update(paste0("CREATE TABLE fooBar (name VARCHAR(200));"))        
+    driver$update(paste0("CREATE TABLE fooBar (\"name\" VARCHAR(200));"))        
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = TRUE)
-    dfResult <- driver$select("SELECT name FROM fooBar ORDER BY name;")
+    dfResult <- driver$select("SELECT \"name\" FROM fooBar ORDER BY \"name\";")
     dfResult[['name']] <- as.factor(dfResult[['name']])
     expect_equal(
         df,
@@ -194,7 +195,7 @@ test_that("saveSingleRow", {
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- data.frame("foo" = c(1), "bar" = c("one"))
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE)
-    dfResult <- driver$select("SELECT foo, bar FROM fooBar ORDER BY foo")
+    dfResult <- driver$select("SELECT \"foo\", \"bar\" FROM fooBar ORDER BY \"foo\"")
     df[, "bar"] <- as.character(df[, "bar"])
     
     expect_equal(
@@ -210,7 +211,7 @@ test_that("saveDataFrameFile", {
     df <- read.csv(file.path(DATA_DIR, 'data1.csv'))
     df$timestamp <- as.POSIXlt(df$timestamp, tz = 'UTC')
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE)
-    dfResult <- driver$select("SELECT \"timestamp\", anoms, expected_value FROM fooBar ORDER BY \"timestamp\";")
+    dfResult <- driver$select("SELECT \"timestamp\", \"anoms\", \"expected_value\" FROM fooBar ORDER BY \"timestamp\";")
     dfResult$timestamp <- as.POSIXlt(df$timestamp, tz = 'UTC')
     expect_equal(nrow(df), nrow(df[which(dfResult$timestamp == df$timestamp),]))
 })
@@ -229,7 +230,7 @@ test_that("saveDataFrameScientificNA", {
     df[2, 'text'] <- NA
     df[['fact']] <- factor(df[['fact']])
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE, forcedColumnTypes = list(id = "integer", text = "character"))
-    dfResult <- driver$select("SELECT id, text FROM fooBar;")
+    dfResult <- driver$select("SELECT \"id\", \"text\" FROM fooBar;")
     expect_equal(nrow(df), nrow(dfResult))
     
     driver <- BackendDriver$new()
@@ -241,7 +242,7 @@ test_that("saveDataFrameScientificNA", {
         stringsAsFactors = FALSE
     )
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE, forcedColumnTypes = list(id = "integer", fact = "character"))
-    dfResult <- driver$select("SELECT id, fact FROM fooBar;")
+    dfResult <- driver$select("SELECT \"id\", \"fact\" FROM fooBar;")
     expect_equal(nrow(df), nrow(dfResult))
 })
 
@@ -251,9 +252,9 @@ test_that("saveDataFrameLarge", {
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- data.frame(a = rep('a', 10000), b = seq(1, 10000))
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE, displayProgress = FALSE)
-    dfff <- driver$select("SELECT a,b FROM fooBar ORDER BY b;")
+    dfff <- driver$select("SELECT \"a\",\"b\" FROM fooBar ORDER BY \"b\";")
     dfResult <- driver$select("SELECT COUNT(*) AS cnt FROM fooBar;")
-    expect_equal(dfResult[1, 'cnt'], nrow(df))
+    expect_equal(dfResult[1, 'CNT'], nrow(df))
 })
 
 
@@ -263,9 +264,9 @@ test_that("saveDataFrameEscape", {
     driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
     df <- data.frame(a = c('a', 'b'), b = c('foo \' bar', 'foo ; bar'))
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE, displayProgress = TRUE)
-    dfff <- driver$select("SELECT a,b FROM fooBar ORDER BY b;")
+    dfff <- driver$select("SELECT \"a\",\"b\" FROM fooBar ORDER BY \"b\";")
     dfResult <- driver$select("SELECT COUNT(*) AS cnt FROM fooBar;")
-    expect_equal(dfResult[1, 'cnt'], nrow(df))
+    expect_equal(dfResult[1, 'CNT'], nrow(df))
 })
 
 test_that("saveDataFrameNonScalar1", {

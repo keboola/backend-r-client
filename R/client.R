@@ -272,10 +272,10 @@ BackendDriver <- setRefClass(
                 }
                 # drop the table if necessary
                 if (tableExists(table)) {
-                    update(paste0("DROP TABLE ", table, " CASCADE;"))
+                    update(paste0("DROP TABLE \"", table, "\" CASCADE;"))
                 }
                 # create the table
-                sql <- paste0("CREATE TABLE ", table, " (", paste(columns, collapse = ", "), ");")
+                sql <- paste0("CREATE TABLE \"", table, "\" (", paste(columns, collapse = ", "), ");")
                 update(sql)
             } else {
                 df <- dfRaw
@@ -291,9 +291,9 @@ BackendDriver <- setRefClass(
                 }
             )
             if (rowNumbers) {
-                sqlHeader <- paste0("INSERT INTO ", table, " (row_num, ", paste(colNames, collapse = ", "), ") VALUES ")
+                sqlHeader <- paste0("INSERT INTO \"", table, "\" (\"row_num\", ", paste(colNames, collapse = ", "), ") VALUES ")
             } else {
-                sqlHeader <- paste0("INSERT INTO ", table, " (", paste(colNames, collapse = ", "), ") VALUES ")			
+                sqlHeader <- paste0("INSERT INTO \"", table, "\" (", paste(colNames, collapse = ", "), ") VALUES ")			
             }
             
             if (nrow(df) > 0) {

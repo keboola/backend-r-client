@@ -1,6 +1,6 @@
 #' Class to access Keboola workspaces
 
-#' @import methods RJDBC rJava
+#' @import methods RJDBC rJava keboola.sapi.r.client
 #' @export BackendDriver
 #' @exportClass BackendDriver
 #' @field conn Database connection (JDBCConnection)
@@ -237,7 +237,7 @@ BackendDriver <- setRefClass(
                 
                 # convert column types to database types and create list of column defininitions
                 if (rowNumbers) {
-                    columns <- list("row_num INTEGER")
+                    columns <- list("\"row_num\" INTEGER")
                 } else {
                     columns <- list()		
                 }
@@ -359,14 +359,8 @@ BackendDriver <- setRefClass(
             \\item{\\code{tableName} Name of the table (without schema).}
             }}
             \\subsection{Return Value}{TRUE if the table exists, FALSE otherwise.}"
-            if (.self$backendType == "snowflake") {
-                res <- select("SHOW TABLES LIKE ?",toupper(tableName))
-                ret <- nrow(res[which(res$name == toupper(tableName)),]) > 0 
-            } else {
-                #redshift
-                res <- select("SELECT COUNT(*) AS count FROM information_schema.tables WHERE table_schema ILIKE ? AND table_name ILIKE ?;", schema, tableName);
-                ret <- res[1, 'count'] > 0
-            }
+            res <- select("SELECT COUNT(*) AS \"count\" FROM information_schema.tables WHERE table_schema ILIKE ? AND table_name ILIKE ?;", schema, tableName);
+            ret <- res[1, 'count'] > 0
             ret
         },
         

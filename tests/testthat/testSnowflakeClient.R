@@ -114,10 +114,10 @@ test_that("columnTypes", {
 test_that("saveDataFrame1", {
     driver <- BackendDriver$new()     
     driver$connectSnowflake(SNFLK_HOST, SNFLK_DB, SNFLK_USER, SNFLK_PASSWORD, SNFLK_SCHEMA)
-    driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
+    driver$update("DROP TABLE IF EXISTS \"fooBar\" CASCADE;")
     df <- data.frame("foo" = c(1,3,5), "bar" = c("one", "three", "five"))
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE)
-    dfResult <- driver$select("SELECT \"foo\", \"bar\" FROM fooBar ORDER BY \"foo\"")
+    dfResult <- driver$select("SELECT \"foo\", \"bar\" FROM \"fooBar\" ORDER BY \"foo\"")
     df[, "bar"] <- as.character(df[, "bar"])
     
     expect_equal(
@@ -125,24 +125,24 @@ test_that("saveDataFrame1", {
         df
     )
 
-    driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
+    driver$update("DROP TABLE IF EXISTS \"fooBar\" CASCADE;")
     df <- data.frame("foo" = c(1,3,5), "bar" = c("one", "three", "five"))
     driver$saveDataFrame(df, "fooBar", rowNumbers = TRUE, incremental = FALSE)
-    dfResult <- driver$select("SELECT \"foo\", \"bar\", \"ROW_NUM\" FROM fooBar ORDER BY \"foo\"")
+    dfResult <- driver$select("SELECT \"foo\", \"bar\", \"row_num\" FROM \"fooBar\" ORDER BY \"foo\"")
     df[, "bar"] <- as.character(df[, "bar"])
-    df[['ROW_NUM']] <- c(1, 2, 3)
+    df[['row_num']] <- c(1, 2, 3)
 
     expect_equal(
         dfResult,
         df
     )
     
-    driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
-    driver$update(paste0("CREATE TABLE fooBar (bar INTEGER);"))
+    driver$update("DROP TABLE IF EXISTS \"fooBar\" CASCADE;")
+    driver$update(paste0("CREATE TABLE \"fooBar\" (\"bar\" INTEGER);"))
     # verify that the old table will get deleted
     df <- data.frame("foo" = c(1,3,5), "bar" = c("one", "three", "five"))
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE)
-    dfResult <- driver$select("SELECT \"foo\", \"bar\" FROM fooBar ORDER BY \"foo\"")
+    dfResult <- driver$select("SELECT \"foo\", \"bar\" FROM \"fooBar\" ORDER BY \"foo\"")
     df[, "bar"] <- as.character(df[, "bar"])
     
     expect_equal(
@@ -154,14 +154,14 @@ test_that("saveDataFrame1", {
 test_that("saveDataFrame2", {
     driver <- BackendDriver$new()     
     driver$connectSnowflake(SNFLK_HOST, SNFLK_DB, SNFLK_USER, SNFLK_PASSWORD, SNFLK_SCHEMA)    
-    driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
-    driver$update(paste0("CREATE TABLE fooBar (bar INTEGER);"))
-    driver$update("DROP VIEW IF EXISTS basBar CASCADE;")
-    driver$update("CREATE VIEW basBar AS (SELECT * FROM fooBar);")
+    driver$update("DROP TABLE IF EXISTS \"fooBar\" CASCADE;")
+    driver$update(paste0("CREATE TABLE \"fooBar\" (\"bar\" INTEGER);"))
+    driver$update("DROP VIEW IF EXISTS \"basBar\" CASCADE;")
+    driver$update("CREATE VIEW \"basBar\" AS (SELECT * FROM \"fooBar\");")
     # verify that the old table will get deleted even whant it has dependencies
     df <- data.frame("foo" = c(1,3,5), "bar" = c("one", "three", "five"))
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE)
-    dfResult <- driver$select("SELECT \"foo\", \"bar\" FROM fooBar ORDER BY \"foo\"")
+    dfResult <- driver$select("SELECT \"foo\", \"bar\" FROM \"fooBar\" ORDER BY \"foo\"")
     df[, "bar"] <- as.character(df[, "bar"])
     
     expect_equal(
@@ -169,8 +169,8 @@ test_that("saveDataFrame2", {
         df
     )
     
-    driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
-    driver$update(paste0("CREATE TABLE fooBar (bar INTEGER);"))
+    driver$update("DROP TABLE IF EXISTS \"fooBar\" CASCADE;")
+    driver$update(paste0("CREATE TABLE \"fooBar\" (\"bar\" INTEGER);"))
     # verify that the old table will not get deleted
     expect_that(
         driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = TRUE),
@@ -178,10 +178,10 @@ test_that("saveDataFrame2", {
     )
     
     df <- data.frame(name = c('first', 'second'))
-    driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
-    driver$update(paste0("CREATE TABLE fooBar (\"name\" VARCHAR(200));"))        
+    driver$update("DROP TABLE IF EXISTS \"fooBar\" CASCADE;")
+    driver$update(paste0("CREATE TABLE \"fooBar\" (\"name\" VARCHAR(200));"))        
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = TRUE)
-    dfResult <- driver$select("SELECT \"name\" FROM fooBar ORDER BY \"name\";")
+    dfResult <- driver$select("SELECT \"name\" FROM \"fooBar\" ORDER BY \"name\";")
     dfResult[['name']] <- as.factor(dfResult[['name']])
     expect_equal(
         df,
@@ -192,10 +192,10 @@ test_that("saveDataFrame2", {
 test_that("saveSingleRow", {
     driver <- BackendDriver$new()     
     driver$connectSnowflake(SNFLK_HOST, SNFLK_DB, SNFLK_USER, SNFLK_PASSWORD, SNFLK_SCHEMA)
-    driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
+    driver$update("DROP TABLE IF EXISTS \"fooBar\" CASCADE;")
     df <- data.frame("foo" = c(1), "bar" = c("one"))
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE)
-    dfResult <- driver$select("SELECT \"foo\", \"bar\" FROM fooBar ORDER BY \"foo\"")
+    dfResult <- driver$select("SELECT \"foo\", \"bar\" FROM \"fooBar\" ORDER BY \"foo\"")
     df[, "bar"] <- as.character(df[, "bar"])
     
     expect_equal(
@@ -207,7 +207,7 @@ test_that("saveSingleRow", {
 test_that("saveDataFrameFile", {
     driver <- BackendDriver$new()     
     driver$connectSnowflake(SNFLK_HOST, SNFLK_DB, SNFLK_USER, SNFLK_PASSWORD, SNFLK_SCHEMA)
-    driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
+    driver$update("DROP TABLE IF EXISTS \"fooBar\" CASCADE;")
     df <- read.table(header=TRUE,sep=",", text = '"","timestamp","anoms","expected_value"
                      "1","2011-02-25",9010345,9010345
                      "2","2013-08-25",747819,606634
@@ -235,7 +235,7 @@ test_that("saveDataFrameFile", {
                      "24","2013-10-12",1044813,733749')
     df$timestamp <- as.POSIXlt(df$timestamp, tz = 'UTC')
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE)
-    dfResult <- driver$select("SELECT \"timestamp\", \"anoms\", \"expected_value\" FROM fooBar ORDER BY \"timestamp\";")
+    dfResult <- driver$select("SELECT \"timestamp\", \"anoms\", \"expected_value\" FROM \"fooBar\" ORDER BY \"timestamp\";")
     dfResult$timestamp <- as.POSIXlt(df$timestamp, tz = 'UTC')
     expect_equal(nrow(df), nrow(df[which(dfResult$timestamp == df$timestamp),]))
 })
@@ -243,7 +243,7 @@ test_that("saveDataFrameFile", {
 test_that("saveDataFrameScientificNA", {
     driver <- BackendDriver$new()
     driver$connectSnowflake(SNFLK_HOST, SNFLK_DB, SNFLK_USER, SNFLK_PASSWORD, SNFLK_SCHEMA)
-    driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
+    driver$update("DROP TABLE IF EXISTS \"fooBar\" CASCADE;")
     df <- data.frame(
         id = c(1, 2, 6e+05),
         text = character(3),
@@ -254,49 +254,49 @@ test_that("saveDataFrameScientificNA", {
     df[2, 'text'] <- NA
     df[['fact']] <- factor(df[['fact']])
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE, forcedColumnTypes = list(id = "integer", text = "character"))
-    dfResult <- driver$select("SELECT \"id\", \"text\" FROM fooBar;")
+    dfResult <- driver$select("SELECT \"id\", \"text\" FROM \"fooBar\";")
     expect_equal(nrow(df), nrow(dfResult))
     
     driver <- BackendDriver$new()
     driver$connectSnowflake(SNFLK_HOST, SNFLK_DB, SNFLK_USER, SNFLK_PASSWORD, SNFLK_SCHEMA)
-    driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
+    driver$update("DROP TABLE IF EXISTS \"fooBar\" CASCADE;")
     df <- data.frame(
         id = c(1, 2, 6e+05, NA),
         fact = c(12, NA, NA, 3),
         stringsAsFactors = FALSE
     )
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE, forcedColumnTypes = list(id = "integer", fact = "character"))
-    dfResult <- driver$select("SELECT \"id\", \"fact\" FROM fooBar;")
+    dfResult <- driver$select("SELECT \"id\", \"fact\" FROM \"fooBar\";")
     expect_equal(nrow(df), nrow(dfResult))
 })
 
 test_that("saveDataFrameLarge", {
     driver <- BackendDriver$new()     
     driver$connectSnowflake(SNFLK_HOST, SNFLK_DB, SNFLK_USER, SNFLK_PASSWORD, SNFLK_SCHEMA)
-    driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
+    driver$update("DROP TABLE IF EXISTS \"fooBar\" CASCADE;")
     df <- data.frame(a = rep('a', 10000), b = seq(1, 10000))
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE, displayProgress = FALSE)
-    dfff <- driver$select("SELECT \"a\",\"b\" FROM fooBar ORDER BY \"b\";")
-    dfResult <- driver$select("SELECT COUNT(*) AS cnt FROM fooBar;")
-    expect_equal(dfResult[1, 'CNT'], nrow(df))
+    dfff <- driver$select("SELECT \"a\",\"b\" FROM \"fooBar\" ORDER BY \"b\";")
+    dfResult <- driver$select("SELECT COUNT(*) AS \"cnt\" FROM \"fooBar\";")
+    expect_equal(dfResult[1, 'cnt'], nrow(df))
 })
 
 
 test_that("saveDataFrameEscape", {
     driver <- BackendDriver$new()
     driver$connectSnowflake(SNFLK_HOST, SNFLK_DB, SNFLK_USER, SNFLK_PASSWORD, SNFLK_SCHEMA)
-    driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
+    driver$update("DROP TABLE IF EXISTS \"fooBar\" CASCADE;")
     df <- data.frame(a = c('a', 'b'), b = c('foo \' bar', 'foo ; bar'))
     driver$saveDataFrame(df, "fooBar", rowNumbers = FALSE, incremental = FALSE, displayProgress = TRUE)
-    dfff <- driver$select("SELECT \"a\",\"b\" FROM fooBar ORDER BY \"b\";")
-    dfResult <- driver$select("SELECT COUNT(*) AS cnt FROM fooBar;")
+    dfff <- driver$select("SELECT \"a\",\"b\" FROM \"fooBar\" ORDER BY \"b\";")
+    dfResult <- driver$select("SELECT COUNT(*) AS cnt FROM \"fooBar\";")
     expect_equal(dfResult[1, 'CNT'], nrow(df))
 })
 
 test_that("saveDataFrameNonScalar1", {
     driver <- BackendDriver$new()
     driver$connectSnowflake(SNFLK_HOST, SNFLK_DB, SNFLK_USER, SNFLK_PASSWORD, SNFLK_SCHEMA)
-    driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
+    driver$update("DROP TABLE IF EXISTS \"fooBar\" CASCADE;")
     df <- data.frame(a = c('a', 'b'), stringsAsFactors = FALSE)
     df$b <- list('e', 'f')
     expect_error(
@@ -308,7 +308,7 @@ test_that("saveDataFrameNonScalar1", {
 test_that("saveDataFrameNonScalar2", {
     driver <- BackendDriver$new()
     driver$connectSnowflake(SNFLK_HOST, SNFLK_DB, SNFLK_USER, SNFLK_PASSWORD, SNFLK_SCHEMA)
-    driver$update("DROP TABLE IF EXISTS fooBar CASCADE;")
+    driver$update("DROP TABLE IF EXISTS \"fooBar\" CASCADE;")
     df <- data.frame(a = c('a', 'b'), stringsAsFactors = FALSE)
     df$b <- list(c('a1', 'a2', 'a3'), c('b1', 'b2'))
     expect_error(

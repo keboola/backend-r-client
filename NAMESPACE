@@ -3,5 +3,6 @@
 export(BackendDriver)
 exportClasses(BackendDriver)
 import(RJDBC)
+import(keboola.sapi.r.client)
 import(methods)
 import(rJava)

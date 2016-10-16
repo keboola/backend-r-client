@@ -30,7 +30,10 @@ tryCatch({
     RS_SCHEMA <- redshiftWorkspace$connection$schema
     RS_USER <- redshiftWorkspace$connection$user
     RS_PASSWORD <- redshiftWorkspace$connection$password
-    test_check("keboola.backend.r.client")
+    rep <- MultiReporter$new(
+        reporters = list(SummaryReporter$new(), FailReporter$new(), CheckReporter$new())
+    )    
+    test_check("keboola.backend.r.client", reporter = rep)
 }, finally = {
     cl$dropWorkspace(snowflakeWorkspace$id)
     cl$dropWorkspace(redshiftWorkspace$id)

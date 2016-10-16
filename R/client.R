@@ -99,7 +99,7 @@ BackendDriver <- setRefClass(
                              user,
                              password, ...)
             schema <<- schema
-            dbSendUpdate(conn, "ALTER SESSION SET TIMESTAMP_OUTPUT_FORMAT = 'YYYY-MM-DD HH24:MI:SS', QUERY_TAG='lg-r';")
+            dbSendUpdate(conn, "ALTER SESSION SET TIMESTAMP_OUTPUT_FORMAT = 'YYYY-MM-DD HH24:MI:SS', TIMESTAMP_TYPE_MAPPING='TIMESTAMP_NTZ', QUERY_TAG='lg-r';")
             
             res <- dbGetQuery(conn, 'SELECT
                               CURRENT_USER() AS USER,
